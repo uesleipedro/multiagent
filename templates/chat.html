@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Chat IA</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 1em;
+    }
+
+    .msg {
+      margin: 0.5em 0;
+    }
+
+    .voce {
+      color: blue;
+    }
+
+    .ia {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Chat com IA</h1>
+  {% for item in history %}
+  <div class="msg">
+    <strong class="{{ 'voce' if item.autor == 'Você' else 'ia' }}">{{ item.autor }}:</strong>
+    {{ item.msg }}
+  </div>
+  {% endfor %}
+  <form method="post">
+    <input name="user_input" type="text" style="width:80%; height: 100px" autofocus required>
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+
+</html>

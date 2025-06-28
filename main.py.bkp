@@ -10,12 +10,9 @@ from tools.servico_interno_tool import lista_cancelamento, lista_cotacao
 from tools.cancelamento_tool import registra_cancelamento
 from config.prompts import ASSISTENTE_FINANCEIRO_PROMPT, ASSISTENTE_CANCELAMENTO_PROMPT, ASSISTENTE_ADMINISTRATIVO_PROMPT, ASSISTENTE_SERVICO_INTERNO_PROMPT
 from langchain.tools import tool 
+from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-import asyncio
 
 load_dotenv()
 OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
@@ -32,7 +29,7 @@ store = InMemoryStore()
 
 transferir_para_financeiro = create_handoff_tool(
     agent_name="assistente_financeiro",
-    description="Transferir o usuário para o assistente financeiro (ex.: preços, fazer cotações e boletos).",
+    description="Transferir o usuário para o assistente financeiro (ex.: problemas de pagamento, boletos).",
 )
 
 transferir_para_administrativo = create_handoff_tool(
@@ -115,27 +112,28 @@ swarm = create_swarm(
     store=store,
 )
 
+
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 
-@app.get("/", response_class=HTMLResponse)
-async def get_chat(request: Request):
-    return templates.TemplateResponse("chat.html", {"request": request, "history": []})
+@app.get("/webhook")
+async def webhook():
+    """"""
+    return "Webhook TESTE"
 
-@app.post("/", response_class=HTMLResponse)
-async def post_chat(request: Request, user_input: str = Form(...)):
-    client_id = "cliente_web"  # Se quiser, gere dinamicamente por sessão
-    
-    resposta = swarm.invoke(
-        {"messages": [{"role": "user", "content": user_input}]},
-        {"configurable": {"thread_id": "1"}},
-    )
+while True:
+    user_input = input("Você: ")
+        
+    if user_input.lower() == 'sair':
+        break
+            
+    try:
+        agent_type = swarm.invoke(
+            {"messages": [{"role": "user", "content": user_input}]},
+            {"configurable": {"thread_id": "1"}},
+        )
+        print(agent_type['messages'][-1].content)
+    except Exception as e:
+        print(f"Erro: {str(e)}")
+        continue
 
-    # Para simplicidade, histórico básico (pode armazenar no store real)
-    return templates.TemplateResponse("chat.html", {
-        "request": request,
-        "history": [
-            {"autor": "Você", "msg": user_input},
-            {"autor": "IA", "msg": resposta['messages'][-1].content}
-        ]
-    })
+
