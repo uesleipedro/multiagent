@@ -16,6 +16,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import asyncio
+import markdown
 
 load_dotenv()
 OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
@@ -122,6 +123,7 @@ templates = Jinja2Templates(directory="templates")
 async def get_chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request, "history": []})
 
+history = []
 @app.post("/", response_class=HTMLResponse)
 async def post_chat(request: Request, user_input: str = Form(...)):
     client_id = "cliente_web"  # Se quiser, gere dinamicamente por sessão
@@ -130,12 +132,11 @@ async def post_chat(request: Request, user_input: str = Form(...)):
         {"messages": [{"role": "user", "content": user_input}]},
         {"configurable": {"thread_id": "1"}},
     )
-
+    msg = markdown.markdown(resposta['messages'][-1].content)
+    history.append({"autor": "Você", "msg": user_input})
+    history.append({"autor": "IA", "msg": msg})
     # Para simplicidade, histórico básico (pode armazenar no store real)
     return templates.TemplateResponse("chat.html", {
         "request": request,
-        "history": [
-            {"autor": "Você", "msg": user_input},
-            {"autor": "IA", "msg": resposta['messages'][-1].content}
-        ]
+        "history": history
     })
