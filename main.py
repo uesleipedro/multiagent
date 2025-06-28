@@ -13,7 +13,7 @@ from langchain.tools import tool
 from dotenv import load_dotenv
 import os
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import asyncio
 import markdown
@@ -125,18 +125,19 @@ async def get_chat(request: Request):
 
 history = []
 @app.post("/", response_class=HTMLResponse)
-async def post_chat(request: Request, user_input: str = Form(...)):
+async def post_chat(request: Request, user_input: str = Form(...), user_id: str = Form(...)):
     client_id = "cliente_web"  # Se quiser, gere dinamicamente por sessão
-    
+    print(f'user: {user_id}')
     resposta = swarm.invoke(
         {"messages": [{"role": "user", "content": user_input}]},
-        {"configurable": {"thread_id": "1"}},
+        {"configurable": {"thread_id": user_id}},
     )
     msg = markdown.markdown(resposta['messages'][-1].content)
     history.append({"autor": "Você", "msg": user_input})
     history.append({"autor": "IA", "msg": msg})
+    return JSONResponse(content={"history": history[-2:]}) 
     # Para simplicidade, histórico básico (pode armazenar no store real)
-    return templates.TemplateResponse("chat.html", {
-        "request": request,
-        "history": history
-    })
+    #return templates.TemplateResponse("chat.html", {
+    #    "request": request,
+    #    "history": history
+    #})

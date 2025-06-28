@@ -9,30 +9,6 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         const inputElement = document.getElementById("user_id");
         inputElement.value = Math.random().toString(36).substr(2).slice(0, 9);
-
-        const form = document.querySelector("form");
-        form.addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const formData = new FormData(form);
-          const resposta = await fetch("/", {
-            method: "POST",
-            body: formData,
-          });
-          const dados = await resposta.json();
-
-          const messages = document.querySelector(".messages");
-
-          dados.history.forEach((item) => {
-            const div = document.createElement("div");
-            div.className = `message ${item.autor === "Você" ? "user" : "bot"}`;
-            div.innerHTML = item.msg;
-            messages.appendChild(div);
-          });
-
-          messages.scrollTop = messages.scrollHeight;
-          form.reset();
-        });
       };
     </script>
     <style>
@@ -117,7 +93,11 @@
     <h1>Agente Chat</h1>
     <div class="chat-container">
       <div class="messages">
-        <!-- Carrega histórico inicial se desejar -->
+        {% for item in history %}
+        <div class="message {{ 'user' if item.autor == 'Você' else 'bot' }}">
+          {{ item.msg | safe }}
+        </div>
+        {% endfor %}
       </div>
       <form method="post">
         <input
