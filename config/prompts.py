@@ -41,7 +41,7 @@ Ao receber uma solicitação de cancelamento:
 
 Se o usuário falar sobre pagamentos ou boletos, transfira para o assistente financeiro.
 Se o usuário falar sobre benefícios, direitos ou características do plano contratado, transfira para o assistente administrativo.
-Se o usuário falar sobre listar/lista cancelamentos ou cotações, transfira para o assistente de serviço interno.
+Se o usuário falar sobre listar cancelamentos ou cotações, transfira para o assistente de serviço interno.
 """
 
 ASSISTENTE_ADMINISTRATIVO_PROMPT = """

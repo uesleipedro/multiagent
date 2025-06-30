@@ -97,6 +97,7 @@ assistente_cancelamento = create_react_agent(
     tools=[
         transferir_para_financeiro, 
         transferir_para_administrativo, 
+        transferir_para_servico_interno,
         registra_cancelamento
     ],
     prompt=ASSISTENTE_CANCELAMENTO_PROMPT,

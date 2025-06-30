@@ -1,135 +1,208 @@
 <!doctype html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Chat IA</title>
-    <script>
-      window.onload = function () {
-        const messagesDiv = document.querySelector(".messages");
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        const inputElement = document.getElementById("user_id");
-        inputElement.value = Math.random().toString(36).substr(2).slice(0, 9);
 
-        const form = document.querySelector("form");
-        form.addEventListener("submit", async function (e) {
-          e.preventDefault();
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat IA</title>
+  <script>
+    window.onload = function () {
+      loading('none');
+      const messagesDiv = document.querySelector(".messages");
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      const inputElement = document.getElementById("user_id");
+      inputElement.value = Math.random().toString(36).substr(2).slice(0, 9);
 
-          const formData = new FormData(form);
-          const resposta = await fetch("/", {
-            method: "POST",
-            body: formData,
-          });
-          const dados = await resposta.json();
+      const form = document.querySelector("form");
+      form.addEventListener("submit", async function (e) {
+        loading('flex');
+        e.preventDefault();
 
-          const messages = document.querySelector(".messages");
 
-          dados.history.forEach((item) => {
-            const div = document.createElement("div");
-            div.className = `message ${item.autor === "Você" ? "user" : "bot"}`;
-            div.innerHTML = item.msg;
-            messages.appendChild(div);
-          });
-
-          messages.scrollTop = messages.scrollHeight;
-          form.reset();
+        const formData = new FormData(form);
+        const resposta = await fetch("/", {
+          method: "POST",
+          body: formData,
         });
-      };
-    </script>
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f0f2f5;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
+        const dados = await resposta.json();
+        console.log(">>> ", dados);
+        //if (dados !== undefined) loading('flex');
+
+        const messages = document.querySelector(".messages-text");
+
+        dados.history.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = `message ${item.autor === "Você" ? "user" : "bot"}`;
+          div.innerHTML = item.msg;
+          messages.appendChild(div);
+          loading('none');
+        });
+
+        messages.scrollTop = messages.scrollHeight;
+        form.reset();
+      });
+
+      function loading(style_display) {
+        const loadingDiv = document.getElementById('loading');
+        loadingDiv.style.display = style_display;
       }
-      body h1 {
-        color: #0084ff;
-        margin-bottom: 20px;
+      // Exemplo: mostrar o loading por 5 segundos
+      //const loadingDiv = document.getElementById('loading');
+      //loadingDiv.style.display = 'flex';
+    };
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    body h1 {
+      color: #0084ff;
+      margin-bottom: 20px;
+    }
+
+    .chat-container {
+      background: #fff;
+      width: 80%;
+      height: 600px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+    }
+
+    .messages-text {
+      height: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .messages-text>.message {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      word-wrap: break-word;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #0084ff;
+      color: #fff;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #e4e6eb;
+      color: #000;
+      border-bottom-left-radius: 0;
+    }
+
+    form {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background: #fafafa;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 20px;
+      background: #0084ff;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #006bbd;
+    }
+
+    #loading {
+      font-size: 60px;
+      height: 10%;
+      font-weight: bold;
+      display: flex;
+      gap: 8px;
+      bottom: 0px;
+    }
+
+    .dot {
+      animation: bounce 0.8s infinite;
+    }
+
+    .dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
       }
-      .chat-container {
-        background: #fff;
-        width: 80%;
-        height: 600px;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+
+      50% {
+        transform: translateY(-10px);
       }
-      .messages {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-      }
-      .message {
-        max-width: 75%;
-        padding: 10px 15px;
-        margin: 5px 0;
-        border-radius: 15px;
-        word-wrap: break-word;
-      }
-      .user {
-        align-self: flex-end;
-        background: #0084ff;
-        color: #fff;
-        border-bottom-right-radius: 0;
-      }
-      .bot {
-        align-self: flex-start;
-        background: #e4e6eb;
-        color: #000;
-        border-bottom-left-radius: 0;
-      }
-      form {
-        display: flex;
-        padding: 10px;
-        border-top: 1px solid #ccc;
-        background: #fafafa;
-      }
-      input[type="text"] {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 20px;
-        outline: none;
-      }
-      button {
-        margin-left: 10px;
-        padding: 0 20px;
-        border: none;
-        border-radius: 20px;
-        background: #0084ff;
-        color: #fff;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #006bbd;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Agente Chat</h1>
-    <div class="chat-container">
-      <div class="messages">
-        <!-- Carrega histórico inicial se desejar -->
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Agente Chat</h1>
+  <div class="chat-container">
+    <div class="messages">
+      <div class="messages-text"></div>
+
+      <div id="loading">
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+        <span class="dot">.</span>
       </div>
-      <form method="post">
-        <input
-          name="user_input"
-          type="text"
-          placeholder="Digite sua mensagem..."
-          autofocus
-          required
-        />
-        <input type="hidden" name="user_id" id="user_id" />
-        <button type="submit" id="sub">Enviar</button>
-      </form>
     </div>
-  </body>
+    <form method="post">
+      <input name="user_input" type="text" placeholder="Digite sua mensagem..." autofocus required />
+      <input type="hidden" name="user_id" id="user_id" />
+      <button type="submit" id="sub">Enviar</button>
+    </form>
+  </div>
+</body>
+
 </html>
