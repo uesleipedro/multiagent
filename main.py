@@ -1,6 +1,5 @@
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from langgraph_supervisor import create_supervisor
 from langgraph_swarm import create_swarm, create_handoff_tool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.memory import InMemoryStore
@@ -120,11 +119,11 @@ swarm = create_swarm(
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+history = []
 @app.get("/", response_class=HTMLResponse)
 async def get_chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request, "history": []})
 
-history = []
 @app.post("/", response_class=HTMLResponse)
 async def post_chat(request: Request, user_input: str = Form(...), user_id: str = Form(...)):
     client_id = "cliente_web"  # Se quiser, gere dinamicamente por sessão

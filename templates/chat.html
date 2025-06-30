@@ -15,8 +15,8 @@
       const form = document.querySelector("form");
       form.addEventListener("submit", async function (e) {
         loading('flex');
-        e.preventDefault();
 
+        e.preventDefault();
 
         const formData = new FormData(form);
         const resposta = await fetch("/", {
@@ -24,8 +24,6 @@
           body: formData,
         });
         const dados = await resposta.json();
-        console.log(">>> ", dados);
-        //if (dados !== undefined) loading('flex');
 
         const messages = document.querySelector(".messages-text");
 
@@ -45,9 +43,6 @@
         const loadingDiv = document.getElementById('loading');
         loadingDiv.style.display = style_display;
       }
-      // Exemplo: mostrar o loading por 5 segundos
-      //const loadingDiv = document.getElementById('loading');
-      //loadingDiv.style.display = 'flex';
     };
   </script>
   <style>
@@ -198,7 +193,7 @@
       </div>
     </div>
     <form method="post">
-      <input name="user_input" type="text" placeholder="Digite sua mensagem..." autofocus required />
+      <input name="user_input" id="user_input" type="text" placeholder="Digite sua mensagem..." autofocus required />
       <input type="hidden" name="user_id" id="user_id" />
       <button type="submit" id="sub">Enviar</button>
     </form>

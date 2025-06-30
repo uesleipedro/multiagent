@@ -1,0 +1,11 @@
+fastapi==0.115.14
+uvicorn[standard]
+langchain==0.3.26
+langchain_openai==0.3.27
+langgraph==0.4.8
+langgraph_supervisor==0.0.27
+langgraph_swarm==0.0.11
+Markdown==3.8.2
+python-dotenv==1.1.1
+Requests==2.32.4
+supabase==2.16.0

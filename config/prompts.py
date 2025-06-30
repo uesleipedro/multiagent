@@ -57,7 +57,7 @@ Caso perguntem sobre quais benefícios possuem, se tem direito a algum serviço 
 #Ferramentas disponíveis
 - produto_vinculado_veiculo: Boa para buscar informações sobre quais benefícios e características do plano do associado.
 
-Se o usuário falar sobre pagamentos ou boletos, transfira para o assistente financeiro.
+Se o usuário falar sobre pagamentos ou boletos, transfira para o assistente_financeiro.
 Se o usuário falar sobre listar/lista cancelamentos ou cotações, transfira para o assistente de serviço interno.
 Se o usuário falar sobre cancelar o seguro, transfira para o assistente de cancelamento.
 """

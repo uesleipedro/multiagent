@@ -1,7 +1,9 @@
+from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
+from langgraph.graph import StateGraph, START, END
 from langgraph_supervisor import create_supervisor
-from langgraph_swarm import create_swarm, create_handoff_tool
+from langgraph_swarm import SwarmState, create_handoff_tool, add_active_agent_router
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.memory import InMemoryStore
 from tools.financeiro_tool import busca_boleto
@@ -10,9 +12,15 @@ from tools.servico_interno_tool import lista_cancelamento, lista_cotacao
 from tools.cancelamento_tool import registra_cancelamento
 from config.prompts import ASSISTENTE_FINANCEIRO_PROMPT, ASSISTENTE_CANCELAMENTO_PROMPT, ASSISTENTE_ADMINISTRATIVO_PROMPT, ASSISTENTE_SERVICO_INTERNO_PROMPT
 from langchain.tools import tool 
-from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+import asyncio
+import markdown
+from typing import List, Optional
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
@@ -23,13 +31,19 @@ model = ChatOpenAI(
     model=MODEL_NAME, 
     temperature=0
 ) 
+# Schema do Estado
+class AgentState(BaseModel):
+    messages: List[HumanMessage]
+    active_agent: str = "assistente_administrativo"
+    last_agent: Optional[str] = None
+    metadata: dict = {}
 
 checkpointer = InMemorySaver() 
 store = InMemoryStore()
 
 transferir_para_financeiro = create_handoff_tool(
     agent_name="assistente_financeiro",
-    description="Transferir o usuário para o assistente financeiro (ex.: problemas de pagamento, boletos).",
+    description="Transferir o usuário para o assistente financeiro (ex.: preços, fazer cotações e boletos).",
 )
 
 transferir_para_administrativo = create_handoff_tool(
@@ -93,47 +107,55 @@ assistente_cancelamento = create_react_agent(
     tools=[
         transferir_para_financeiro, 
         transferir_para_administrativo, 
+        transferir_para_servico_interno,
         registra_cancelamento
     ],
     prompt=ASSISTENTE_CANCELAMENTO_PROMPT,
     name="assistente_cancelamento"
 )
-# Criando o swarm (multiagente)
-swarm = create_swarm(
-    agents=[
-        assistente_financeiro, 
-        assistente_cancelamento,
-        assistente_administrativo,
-        assistente_servico_interno
-    ],
-    default_active_agent="assistente_administrativo",  # Agente ativo por padrão
-).compile( 
-    checkpointer=checkpointer,
-    store=store,
+
+workflow = StateGraph(state_schema=AgentState)
+
+# Adição de nós
+#workflow.add_node(START, initialize_state)
+workflow.add_node("assistente_administrativo", assistente_administrativo)
+workflow.add_node("assistente_financeiro", assistente_financeiro)
+workflow.add_node("assistente_servico_interno", assistente_servico_interno)
+workflow.add_node("assistente_cancelamento", assistente_cancelamento)
+
+# Configuração do fluxo
+for agent in [...]:
+    workflow.add_edge(agent, END)
+
+# Compilação
+swarm = workflow.compile(
+    checkpointer=InMemorySaver(),
+    interrupt_before=[...]
 )
 
-
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
-@app.get("/webhook")
-async def webhook():
-    """"""
-    return "Webhook TESTE"
+@app.get("/", response_class=HTMLResponse)
+async def get_chat(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request, "history": []})
 
-while True:
-    user_input = input("Você: ")
-        
-    if user_input.lower() == 'sair':
-        break
-            
-    try:
-        agent_type = swarm.invoke(
-            {"messages": [{"role": "user", "content": user_input}]},
-            {"configurable": {"thread_id": "1"}},
-        )
-        print(agent_type['messages'][-1].content)
-    except Exception as e:
-        print(f"Erro: {str(e)}")
-        continue
-
-
+history = []
+@app.post("/", response_class=HTMLResponse)
+async def post_chat(request: Request, user_input: str = Form(...), user_id: str = Form(...)):
+    
+    client_id = "cliente_web"  # Se quiser, gere dinamicamente por sessão
+    print(f'user: {user_id}')
+    resposta = swarm.invoke(
+        {"messages": [{"role": "user", "content": user_input}]},
+        {"configurable": {"thread_id": user_id}},
+    )
+    msg = markdown.markdown(resposta['messages'][-1].content)
+    history.append({"autor": "Você", "msg": user_input})
+    history.append({"autor": "IA", "msg": msg})
+    return JSONResponse(content={"history": history[-2:]}) 
+    # Para simplicidade, histórico básico (pode armazenar no store real)
+    #return templates.TemplateResponse("chat.html", {
+    #    "request": request,
+    #    "history": history
+    #})
