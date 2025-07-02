@@ -11,7 +11,7 @@ supabase = supabase()
 TOKEN_SGA = os.getenv('TOKEN_SGA')
 
 @tool
-def registra_cancelamento(nome: str, cpf: str, placa: str, motivo: str, novo_orcamento: str):
+def registra_cancelamento(nome: str, cpf: str, placa: str, motivo: str, novo_orcamento: str, telefone: str):
     """
     Ferramenta para registrar o cancelamento
     Args:
@@ -19,6 +19,7 @@ def registra_cancelamento(nome: str, cpf: str, placa: str, motivo: str, novo_orc
         cpf: cpf do cliente (string)
         placa: placa do veículo do cliente (string)
         motivo: motivo do cancelamento (string)
+        telefone: telefone do cliente (string)
     """
     try:
         telefone_from = re.sub('[^a-zA-Z0-9]', '', "(61)9826-03961")
@@ -60,7 +61,7 @@ def registra_cancelamento(nome: str, cpf: str, placa: str, motivo: str, novo_orc
             "nome": f'{nome}',
             "placa": f'{placa}',
             "motivo": f'{motivo}',
-            "telefone": "12345",
+            "telefone": f'{telefone}',
             "numero_cadastro": f'{numero_cadastro}',
             "boleto_aberto": f'{boleto_aberto}',
             "novo_orcamento": f'{novo_orcamento}'           

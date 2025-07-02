@@ -11,3 +11,4 @@ supabase
 typing
 Jinja2
 python-multipart
+langchain-core
